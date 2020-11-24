@@ -8,7 +8,7 @@
     For now this is a simple echo server 
 '''
 
-
+import os
 import socket
 
 from helper import *
@@ -31,8 +31,13 @@ with socket.socket (socket.AF_INET, socket.SOCK_STREAM) as server:
         if connection:
             print (COLORS.green + "Connected to client", client_addr, COLORS.clear)
 
-            # simple echo server
-            while True:
-                data = connection.recv(2048).decode ()
-                connection.sendall (data.encode ())
+            try:
+                # simple echo server
+                while True:
+                    data = connection.recv(2048).decode ()
+                    connection.sendall (data.encode ())
+            except:
+                print (COLORS.red + "Client forcibly closed the connection" + COLORS.clear)
+                connection.close ()
+                os._exit(1)
 
