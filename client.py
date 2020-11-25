@@ -94,17 +94,53 @@ def main ():
                 confirmation = client.recv (2048).decode ()
                 print (confirmation)
 
-                # TODO download the values to be able to log in later
+                # write values to file to be able to log in later
+                fp = open (uID+'.txt', 'w+')
+                fp.write (str(w).rstrip('\n'))
+                fp.write ('\n')
+                fp.write (str(N).rstrip('\n'))
+                fp.close ()
+                return
 
         # if we are here it means the user wishes to log-in
+        client.sendall (SIG_AUTH.encode ())
+
+        # get confirmation
+        ack = client.recv (1024).decode ()
+
+        if ack == "-1":
+            print (COLORS.red + "Could not log-in at the moment, please try again." + COLORS.clear)
+            return 
+
+        # get user input
+        uID = input ("Enter your username: " + COLORS.mag)
+        print (COLORS.clear)
+
+        # send user ID to the server for verification
+        client.sendall (uID.encode ())
+
+        # get server ack
+        ack = client.recv (1024).decode ()
+
+        # if there is an error
+        if not ack == "OK":
+            print (ack)
+            return
+
         '''
             This is where the ZKP magic happens
         '''
+        # read our file for w and N
+        try:
+            record = tuple(open(uID+".txt", "r"))
+            w = int (record[0])
+            N = int (record[1])
+        except:
+            print (COLORS.red + "Could not find credentials for " + uID + COLORS.clear)
+            w = input ("Enter w: ")
+            N = input ("Enter N: ")
 
-        while True:
-            client.sendall (input().encode())
-            data = client.recv (2048).decode()
-            print (data)
+
 
 if __name__ == "__main__":
     main ()

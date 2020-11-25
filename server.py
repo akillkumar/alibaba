@@ -84,8 +84,33 @@ with socket.socket (socket.AF_INET, socket.SOCK_STREAM) as server:
                 confirmation = COLORS.green + "Credentials for " + uID + " created successfully!" + COLORS.clear
                 print (confirmation)
                 connection.sendall (confirmation.encode ())
+            
+            # if user wishes to authenticate
             elif choice == SIG_AUTH:
-                print ("Authentication")
+                # ack the creation request
+                connection.sendall ("OK".encode ())
+
+                # get user ID from the client
+                uID = connection.recv (1024).decode ()
+                
+                # check if this user ID is actually registered
+                flag = False
+                with open ('users.json') as f:
+                    data = json.load (f)
+
+                    for credential in data:
+                        if credential["id"] == uID:
+                            flag = True
+                            break
+
+                # if its a new username
+                if not flag:
+                    error_msg = COLORS.red + "This username is not registered. Use python client.py -create to create new credentials." + COLORS.clear
+                    connection.send (error_msg.encode ())
+                    os._exit (1)
+                
+                # if its an existing user, send OK
+                connection.sendall ("OK".encode ())
             else:
                 print ("What")
 
