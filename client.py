@@ -30,9 +30,36 @@ def main ():
         # go through command line options to check if user wants to create a credential
         for arg in sys.argv:
             if "create" in arg:
+                # first send the server signal
+                client.sendall (SIG_CREATE.encode ())
+
+                # get confirmation
+                ack = client.recv (1024).decode()
+
+                if ack == "-1":
+                    print (COLORS.red + "Could not create credentials at the moment, please try again." + COLORS.clear)
+                    return 
+
+                # prompt user for id
                 uID  = input ("Enter a username: " + COLORS.mag)
                 print (COLORS.clear)
+
+                # send this to server to verify
+                client.sendall (uID.encode ())
+
+                # get server ack
+                ack = client.recv (1024).decode ()
                 
+                # if there is some error
+                if not ack == "OK":
+                    print (ack)
+                    return
+                
+                '''
+                    User credential generation
+                    Simplified Feige-Fiat-Shamir identification scheme can be implemented here
+                '''
+
                 # generate two random primes
                 p = gen ()
                 q = gen ()
@@ -48,7 +75,22 @@ def main ():
                 print (v)
 
                 # TODO submit this to server
-                return 0
+                client.sendall (str(v).encode ())
+                server_v = client.recv (2048).decode ()
+
+                client.sendall (str(N).encode ())
+                server_N = client.recv (2048).decode ()
+
+                try:
+                    if int (server_v) == v and int (server_N) == N:
+                        client.sendall ("OK".encode ())
+                    else:
+                        client.sendall ("ERR".encode ())
+                except:
+                    pass
+
+                confirmation = client.recv (2048).decode ()
+                print (confirmation)
 
         # if we are here it means the user wishes to log-in
         '''
