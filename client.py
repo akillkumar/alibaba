@@ -74,13 +74,14 @@ def main ():
                 v = modexp (w, 2, N)
                 print (v)
 
-                # TODO submit this to server
+                # submit this to the server
                 client.sendall (str(v).encode ())
                 server_v = client.recv (2048).decode ()
 
                 client.sendall (str(N).encode ())
                 server_N = client.recv (2048).decode ()
 
+                # make sure server has the same values
                 try:
                     if int (server_v) == v and int (server_N) == N:
                         client.sendall ("OK".encode ())
@@ -89,8 +90,11 @@ def main ():
                 except:
                     pass
 
+                # get creation confirmation from the server
                 confirmation = client.recv (2048).decode ()
                 print (confirmation)
+
+                # TODO download the values to be able to log in later
 
         # if we are here it means the user wishes to log-in
         '''
