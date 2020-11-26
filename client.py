@@ -131,6 +131,7 @@ def main ():
             This is where the ZKP magic happens
         '''
         # read our file for w and N
+        # TODO command line option to provide path to credentials
         try:
             record = tuple(open(uID+".txt", "r"))
             w = int (record[0])
@@ -140,8 +141,37 @@ def main ():
             w = input ("Enter w: ")
             N = input ("Enter N: ")
 
+        # pick a random number x between 1 and n
+        # such that gcd (x, N) = 1
+        x = 0
+        while True:
+            x = random.randrange (N)
+            if gcd (x, N) == 1:
+                break
+        
+        # compute y = x^2 mod N
+        y = modexp (x, 2, N)
 
+        print ("y =", y )
 
+        # and send y to the server
+        client.sendall (str(y).encode ())
+
+        # server sends a random bit
+        b = client.recv (4).decode ()
+
+        # calculate z based on the bit 
+        z = x * (w**int(b))
+        print ("z =", z)
+
+        # send z to the server
+        client.sendall (str(z).encode ())
+
+        # get confirmation
+        confirmation = client.recv (1024).decode ()
+
+        print (confirmation)
+        
 if __name__ == "__main__":
     main ()
 

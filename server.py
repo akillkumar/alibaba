@@ -11,6 +11,7 @@
 import os
 import json
 import socket
+import random 
 
 from helper import *
 
@@ -95,12 +96,14 @@ with socket.socket (socket.AF_INET, socket.SOCK_STREAM) as server:
                 
                 # check if this user ID is actually registered
                 flag = False
+                record = []
                 with open ('users.json') as f:
                     data = json.load (f)
 
                     for credential in data:
                         if credential["id"] == uID:
                             flag = True
+                            record = credential["record"]
                             break
 
                 # if its a new username
@@ -111,6 +114,35 @@ with socket.socket (socket.AF_INET, socket.SOCK_STREAM) as server:
                 
                 # if its an existing user, send OK
                 connection.sendall ("OK".encode ())
+
+                # now, client sends y
+                y = int(connection.recv (2048).decode ())
+                
+                # calculate a random bit b = {0, 1}
+                b = random.randrange (0, 2)
+
+                # send b to client
+                connection.sendall (str(b).encode ())
+
+                # client sends z
+                z = int(connection.recv (2048).decode ())
+                print (z**2)
+
+                # validate the user
+                v = int (record[0])
+                N = int (record[1])
+                if b == 0:
+                    if z**2 == y % N:
+                        print ("yay")
+                    else:
+                        print ("nay")
+                if b == 1:
+                    if z**2 == (v*y) % N:
+                        print ("yay")
+                    else:
+                        print ("nay")
+                
+
             else:
                 print ("What")
 
