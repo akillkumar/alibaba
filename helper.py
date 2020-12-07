@@ -21,10 +21,12 @@ class COLORS:
 	yell  = '\033[93m'
 	mag   = '\033[35m'
 
-server_addr = ('127.0.0.1', 9000)
+server_addr = ('127.0.0.1', 9001)
 
 SIG_CREATE = "1"
 SIG_AUTH   = "2"
+
+NUM_TRIALS = 100
 
 # first 200 prime numbers! 
 Primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 
@@ -138,3 +140,13 @@ def modexp (m, e, n):
 		m = (m * m) % n 
 
 	return res
+
+
+'''
+ Generate random co-prime with a number N
+'''
+def get_coprime(N):
+	while True:
+		x = random.randrange (N)
+		if gcd (x, N) == 1:
+			return x

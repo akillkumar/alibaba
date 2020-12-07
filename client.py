@@ -12,6 +12,7 @@ import os
 import sys
 import socket
 import random
+import json
 
 from helper import *
 
@@ -72,7 +73,6 @@ def main ():
 
                 # compute sqaure of w modulo n
                 v = modexp (w, 2, N)
-                print (v)
 
                 # submit this to the server
                 client.sendall (str(v).encode ())
@@ -136,41 +136,54 @@ def main ():
             record = tuple(open(uID+".txt", "r"))
             w = int (record[0])
             N = int (record[1])
+            print(COLORS.yell + 'Using secret values from ' + COLORS.mag + uID+'.txt' + COLORS.clear)
+            print()
         except:
             print (COLORS.red + "Could not find credentials for " + uID + COLORS.clear)
-            w = input ("Enter w: ")
-            N = input ("Enter N: ")
+            w = int (input ("Enter w: "))
+            N = int (input ("Enter N: "))
 
         # pick a random number x between 1 and n
         # such that gcd (x, N) = 1
-        x = 0
-        while True:
-            x = random.randrange (N)
-            if gcd (x, N) == 1:
-                break
+        x = [get_coprime(N) for _ in range(NUM_TRIALS)]
         
         # compute y = x^2 mod N
-        y = modexp (x, 2, N)
-
-        print ("y =", y )
+        y = [modexp (x[i], 2, N) for i in range(NUM_TRIALS)]
 
         # and send y to the server
         client.sendall (str(y).encode ())
 
-        # server sends a random bit
-        b = client.recv (4).decode ()
+        # server sends a random bit-string
+        b = client.recv (1024).decode ()
 
+        z = [x[i] * (w**int(b[i])) for i in range(NUM_TRIALS)]
         # calculate z based on the bit 
-        z = x * (w**int(b))
-        print ("z =", z)
-
         # send z to the server
         client.sendall (str(z).encode ())
 
         # get confirmation
-        confirmation = client.recv (1024).decode ()
+        confirmation = json.loads(client.recv (1024).decode ())
+        print (confirmation['message'])
+        if not confirmation['success']:
+            return
 
-        print (confirmation)
+        keyword = input('Search for a random fact: ' + COLORS.cyan)
+        print(COLORS.clear)
+
+        client.sendall(keyword.encode())
+
+        facts = (client.recv(4096).decode())
+        # print(facts)
+        facts = json.loads(facts)
+        # print(list(enumerate(facts)))
+        if len(facts) == 0:
+            print(COLORS.red + 'Could not find any matches!' + COLORS.clear)
+        else:
+            print(COLORS.green + 'Received the following facts:' + COLORS.clear)
+            for i, fact in list(enumerate(facts)):
+                print(str(i+1)+'.',fact)
+
+
         
 if __name__ == "__main__":
     main ()
