@@ -21,7 +21,7 @@ class COLORS:
 	yell  = '\033[93m'
 	mag   = '\033[35m'
 
-server_addr = ('127.0.0.1', 9001)
+server_addr = ('127.0.0.1', 9000)
 
 SIG_CREATE = "1"
 SIG_AUTH   = "2"
