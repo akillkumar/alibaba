@@ -15,6 +15,7 @@ import random
 import json
 from helper import *
 from tkinter import *
+from tkinter import filedialog
 import os
 PORT = 9000
 FORMAT = 'utf-8'
@@ -56,6 +57,7 @@ def invalid_login():
     Label(invalid_screen,text="Enter credentials are wrong.", fg='black').pack()
     Button(invalid_screen,text='ok',bg='black', fg='white', command=closebtn5).pack()
 
+
 def custom_cred():
     global w1
     global w2
@@ -64,7 +66,7 @@ def custom_cred():
     global namer 
     global name4
     global custom_cred_scrn
-    custom_cred_scrn=Toplevel(main_screen)
+    custom_cred_scrn=Toplevel(login_screen)
     custom_cred_scrn.title("Custom Credentials")
     custom_cred_scrn.geometry("300x250")
     Label(custom_cred_scrn,text="Enter Custom Credentials",height="2",width="300").pack()
@@ -81,7 +83,8 @@ def custom_cred():
     Label(custom_cred_scrn,text="Enter N").pack()
     n1=StringVar()
     n2=Entry(custom_cred_scrn,textvariable=n1)
-    n2.pack()
+    n2.pack() 
+    Label(text="").pack()
     Button(custom_cred_scrn,text="ok",bg="black",fg="white",command=handle_custom).pack()
 
 
@@ -135,6 +138,7 @@ def closebtn6():
     user_not_found_scrn1.destroy()
     custom_cred_scrn.destroy()
     main_screen.destroy()
+
 def login():
     global login_screen
     global name3
@@ -173,12 +177,16 @@ def login_user():
         user_not_found()
         return 0
 
-    else:
+    
+    try:
         record = tuple(open(uID+".txt", "r"))
         w = int (record[0])
         N = int (record[1])
         print(COLORS.yell + 'Using secret values from ' + COLORS.mag + uID+'.txt' + COLORS.clear)
         print()
+    except:
+        custom_cred()
+        return None
 
     '''
         This is where the ZKP magic happens
@@ -266,9 +274,9 @@ def registration():
     global register_screen
     global name2
     register_screen=Toplevel(main_screen)
-    register_screen.title("Registration Screen")
+    register_screen.title("Registration")
     register_screen.geometry("300x250")
-    Label(register_screen,text="Registration Screen",height="2",width="300").pack()
+    Label(register_screen,text="Registration",height="2",width="300").pack()
     Label(text="").pack()
     Label(register_screen,text="User Name *").pack()
     global name
@@ -351,14 +359,13 @@ def my_main_screen():
     global main_screen
     main_screen=Tk()
     main_screen.geometry("300x250")
-    main_screen.title("Registration/login Screen")
+    main_screen.title("Registration / Login")
     Label(text="  ", fg="white",height="2",width="300").pack()
     Button(text="Login",height="2",width="29",bg="black",fg="white", command=login).pack()
  
     Label(text="").pack()
     Button(text="Registration",height="2",width="30",bg="black",fg="white",command=registration).pack()
-    Label(text="").pack()
-    Button(text="Custom Credentials",height="2",width="30",bg="black",fg="white",command=custom_cred).pack()
+
     main_screen.mainloop()
 my_main_screen()
     
