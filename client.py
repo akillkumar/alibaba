@@ -54,7 +54,7 @@ def invalid_login():
     invalid_screen=Toplevel(custom_cred_scrn)
     invalid_screen.title("Invalid Credentials")
     invalid_screen.geometry("200x200")
-    Label(invalid_screen,text="Enter credentials are wrong.", fg='black').pack()
+    Label(invalid_screen,text="Entered credentials are wrong.", fg='black').pack()
     Button(invalid_screen,text='ok',bg='black', fg='white', command=closebtn5).pack()
 
 
@@ -69,6 +69,9 @@ def custom_cred():
     custom_cred_scrn=Toplevel(login_screen)
     custom_cred_scrn.title("Custom Credentials")
     custom_cred_scrn.geometry("300x250")
+    Label(text="").pack()
+    Label(custom_cred_scrn,text="Credential file not found.").pack()
+    Label(text="").pack()
     Label(custom_cred_scrn,text="Enter Custom Credentials",height="2",width="300").pack()
     Label(text="").pack()
     Label(custom_cred_scrn,text="User Name:").pack()
@@ -94,8 +97,8 @@ def user_not_found():
     user_not_found_scrn.title("User Not Found")
     user_not_found_scrn.geometry("300x250")
     Label(text="").pack()
-    Label(user_not_found_scrn,text="Unable to find user credentials. ").pack()
-    Label(user_not_found_scrn,text="Enter custom credential from menu").pack()
+    Label(user_not_found_scrn,text="Unable to find user.").pack()
+    Label(user_not_found_scrn,text="Register first from menu").pack()
     Button(user_not_found_scrn,text="ok",bg="black",fg="white",command=closebtn).pack()
 
 def user_not_found1():
@@ -186,7 +189,7 @@ def login_user():
         print()
     except:
         custom_cred()
-        return None
+        return 0
 
     '''
         This is where the ZKP magic happens
@@ -219,6 +222,7 @@ def login_user():
     login_success()
     if not confirmation['success']:
         user_not_found()
+        return 0
 
 
 def handle_custom():          #this dont work idk whhyy
@@ -239,8 +243,9 @@ def handle_custom():          #this dont work idk whhyy
     # get server ack
     ack = client.recv (1024).decode ()
     if not ack == "OK":
-        user_not_found1()
+        user_not_found1()   #dude some error here, custom cred is always getting stuck here check if u know whats happ.
         return 0
+
     w=int(w1.get())
     N=int(n1.get())
         # pick a random number x between 1 and n
