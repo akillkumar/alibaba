@@ -66,9 +66,11 @@ def create_credentials(connection, client_addr):
     # next, get the record (v, N)
     v = connection.recv (2048).decode ()
     connection.sendall (v.encode ())
+    v = json.loads(v)
 
     N = connection.recv (2048).decode ()
     connection.sendall (N.encode ())
+    N = json.loads(N)
 
     # ensure that we have the right values
     ack = connection.recv (1024).decode ()
@@ -101,7 +103,6 @@ def create_credentials(connection, client_addr):
 def validate_credentials(connection, client_addr):
     # get user ID from the client
     uID = connection.recv (1024).decode ()
-    print(uID)
     
     # check if this user ID is actually registered
     flag = False
@@ -118,7 +119,7 @@ def validate_credentials(connection, client_addr):
     # if its a new username
     if not flag:
         error_msg = COLORS.red + "This username is not registered. Use python client.py -create to create new credentials." + COLORS.clear
-        print(len(error_msg))
+        # print(len(error_msg))
         connection.send (error_msg.encode ())
         return
     
@@ -126,26 +127,33 @@ def validate_credentials(connection, client_addr):
     connection.sendall ("OK".encode ())
 
     # now, client sends y
-    y = (connection.recv (4096).decode ())
+    y = (connection.recv (10240).decode ())
     y = json.loads(y)
     
     # calculate a random bit-string b = {0, 1}^NUM_TRIALS
-    b = ''.join([str(random.randrange(0,2)) for _ in range(NUM_TRIALS)])
-
+    b = [''.join([str(random.randrange(0,2)) for _ in range(NUM_KEYS)]) for i in range(NUM_TRIALS)]
+    # print('b:',b)
     # send b to client
-    connection.sendall (str(b).encode ())
+    str_b = json.dumps(b)
+    connection.sendall (str_b.encode ())
 
     # client sends z
-    z = (connection.recv (6144).decode ())
+    z = (connection.recv (10240).decode ())
     z = json.loads(z)   # array of z's
+    # print('z:',z)
 
     # validate the user
-    v = int (record[0])
-    N = int (record[1])
+    v = record[0]
+    N = record[1]
+
 
     flag = 0
     for i in range(NUM_TRIALS):
-        if y[i] == 0 or modexp (z[i], 2, N) != (y[i] * (v ** int(b[i]))) % N:
+        prod = 1
+        for j in range(NUM_KEYS):
+            prod = (prod * (int(v[j]) ** int(b[i][j]))) % N
+
+        if modexp(int(z[i]), 2, int(N)) != (int(y[i]) * prod) % N or y[i] == 0 :
             flag = 1
             break
     
@@ -206,7 +214,8 @@ def handle_client(connection, client_addr):
 
                              
             else:
-                print ("What")
+                # print ("What")
+                pass
         except:
             print (COLORS.red + "Client forcibly closed the connection" + COLORS.clear)
             print (COLORS.yell + "Disconnected from", client_addr, COLORS.clear)

@@ -26,7 +26,8 @@ server_addr = ('127.0.0.1', 9000)
 SIG_CREATE = "1"
 SIG_AUTH   = "2"
 
-NUM_TRIALS = 100
+NUM_TRIALS = 10
+NUM_KEYS = 5
 
 # first 200 prime numbers! 
 Primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 

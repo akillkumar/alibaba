@@ -17,28 +17,49 @@ from helper import *
 from tkinter import *
 from tkinter import filedialog
 import os
-PORT = 9000
+
+PORT = server_addr[1]
 FORMAT = 'utf-8'
-SERVER = "127.0.0.1"
+SERVER = server_addr[0]
 ADDR = (SERVER, PORT)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
 
+def browseFiles(): 
+    # print('browse')
+    global namer
+    browse_filename = filedialog.askopenfilename(initialdir = "/", 
+                                          title = "Select a File", 
+                                          filetypes = (("Text files", 
+                                                        "*.txt*"), 
+                                                       ("all files", 
+                                                        "*.*"))) 
+       
+    
+    # Change label contents 
+    # print(browse_filename)
+    try:
+        namer.delete(0,END)
+        namer.insert(0,browse_filename)
+    except:
+        pass
+    # label_file_explorer.configure(text="File Opened: "+filename) 
+
 
 def login_success():
     global login1_scrn
     login1_scrn=Toplevel(login_screen)
-    login1_scrn.title("Login Success")
+    login1_scrn.title("Login")
     login1_scrn.geometry("200x200")
-    Label(login1_scrn,text="Login Success",fg="black").pack()
+    Label(login1_scrn,text="Login Success!",fg="black").pack()
     Button(login1_scrn,text="ok",bg="black",fg="white",command=closebtn1).pack()
 def reg_succ():
     global register_scrn 
     register_scrn=Toplevel(register_screen)
-    register_scrn.title("Registration Successfull")
+    register_scrn.title("Registration Successful")
     register_scrn.geometry("200x200")
-    Label(register_scrn,text="Registration Successfull", fg='black').pack()
+    Label(register_scrn,text="Registration Successful", fg='black').pack()
     Button(register_scrn,text='ok',bg='black', fg='white', command=closebtn3).pack()
 
 def reg_unsucc():
@@ -58,7 +79,7 @@ def invalid_login():
     Button(invalid_screen,text='ok',bg='black', fg='white', command=closebtn5).pack()
 
 
-def custom_cred():
+def custom_cred(filename):
     global w1
     global w2
     global n1
@@ -66,29 +87,24 @@ def custom_cred():
     global namer 
     global name4
     global custom_cred_scrn
+    
     custom_cred_scrn=Toplevel(login_screen)
     custom_cred_scrn.title("Custom Credentials")
     custom_cred_scrn.geometry("300x250")
     Label(text="").pack()
-    Label(custom_cred_scrn,text="Credential file not found.").pack()
+    cred_filename = 'Credential file ' + filename + ' not found.'
+    Label(custom_cred_scrn,text=cred_filename).pack()
     Label(text="").pack()
-    Label(custom_cred_scrn,text="Enter Custom Credentials",height="2",width="300").pack()
+    Button(custom_cred_scrn,text="Browse files...", command=browseFiles).pack()
     Label(text="").pack()
-    Label(custom_cred_scrn,text="User Name:").pack()
+
+    Label(custom_cred_scrn,text="File path:").pack()
     name4=StringVar()
     namer=Entry(custom_cred_scrn,textvariable=name4)
     namer.pack()
+    
     Label(text="").pack()
-    Label(custom_cred_scrn,text="Enter W").pack()
-    w1=StringVar()
-    w2=Entry(custom_cred_scrn,textvariable=w1)
-    w2.pack()
-    Label(custom_cred_scrn,text="Enter N").pack()
-    n1=StringVar()
-    n2=Entry(custom_cred_scrn,textvariable=n1)
-    n2.pack() 
-    Label(text="").pack()
-    Button(custom_cred_scrn,text="ok",bg="black",fg="white",command=handle_custom).pack()
+    Button(custom_cred_scrn,text="ok",bg="black",fg="white",command=handle_custom_file).pack()
 
 
 def user_not_found():
@@ -149,9 +165,9 @@ def login():
     login_screen=Toplevel(main_screen)
     login_screen.title("Login Screen")
     login_screen.geometry("300x250")
-    Label(login_screen,text="Login Screen",height="2",width="300").pack()
+    Label(login_screen,text="Login:",height="2",width="300").pack()
     Label(text="").pack()
-    Label(login_screen,text="User Name *").pack()
+    Label(login_screen,text="Username").pack()
     name3=StringVar()
     nam=Entry(login_screen,textvariable=name3)
     nam.pack()
@@ -183,12 +199,12 @@ def login_user():
     
     try:
         record = tuple(open(uID+".txt", "r"))
-        w = int (record[0])
+        w = json.loads (record[0])
         N = int (record[1])
         print(COLORS.yell + 'Using secret values from ' + COLORS.mag + uID+'.txt' + COLORS.clear)
         print()
     except:
-        custom_cred()
+        custom_cred(uID+'.txt')
         return 0
 
     '''
@@ -196,25 +212,37 @@ def login_user():
     '''
     # read our file for w and N
     # TODO command line option to provide path to credentials
+    login_process(w,N)
 
 
+def login_process(w,N):
     # pick a random number x between 1 and n
     # such that gcd (x, N) = 1
     x = [get_coprime(N) for _ in range(NUM_TRIALS)]
     
     # compute y = x^2 mod N
     y = [modexp (x[i], 2, N) for i in range(NUM_TRIALS)]
+    str_y = json.dumps(y)
 
     # and send y to the server
-    client.sendall (str(y).encode ())
+    client.sendall (str_y.encode ())
 
     # server sends a random bit-string
     b = client.recv (1024).decode ()
+    b = json.loads(b)
 
-    z = [x[i] * (w**int(b[i])) for i in range(NUM_TRIALS)]
+    bit_prod = []
+    for i in range(NUM_TRIALS):
+        bit_prod.append(1)
+        for j in range(NUM_KEYS):
+            bit_prod[-1] = bit_prod[-1] * (w[j] ** int(b[i][j]))
+    
+    z = [x[i] * bit_prod[i] for i in range(NUM_TRIALS)]
+    str_z = json.dumps(z)
+
     # calculate z based on the bit 
     # send z to the server
-    client.sendall (str(z).encode ())
+    client.sendall (str_z.encode ())
 
     # get confirmation
     confirmation = json.loads(client.recv (1024).decode ())
@@ -225,55 +253,23 @@ def login_user():
         return 0
 
 
-def handle_custom():          #this dont work idk whhyy
-    uID = name4.get()
-    uID=str(uID)
-    client.sendall (SIG_AUTH.encode ())
+def handle_custom_file():          #this dont work idk whhyy
+    global namer
 
-    # get confirmation
-    ack = client.recv (1024).decode ()
-
-    if ack == "-1":
-        print (COLORS.red + "Could not log-in at the moment, please try again." + COLORS.clear)
-        return 0
-
-    # send user ID to the server for verification
-    client.send(uID.encode ())
-
-    # get server ack
-    ack = client.recv (1024).decode ()
-    if not ack == "OK":
-        user_not_found1()   #dude some error here, custom cred is always getting stuck here check if u know whats happ.
-        return 0
-
-    w=int(w1.get())
-    N=int(n1.get())
-        # pick a random number x between 1 and n
-    # such that gcd (x, N) = 1
-    x = [get_coprime(N) for _ in range(NUM_TRIALS)]
+    filename = namer.get()
+    custom_cred_scrn.destroy()
     
-    # compute y = x^2 mod N
-    y = [modexp (x[i], 2, N) for i in range(NUM_TRIALS)]
+    try:
+        record = tuple(open(filename, "r"))
+        w = json.loads (record[0])
+        N = int (record[1])
+        print(COLORS.yell + 'Using secret values from ' + COLORS.mag + filename + COLORS.clear)
+        print()
+    except:
+        custom_cred(filename)
+        return 0
 
-    # and send y to the server
-    client.sendall (str(y).encode ())
-
-    # server sends a random bit-string
-    b = client.recv (1024).decode ()
-
-    z = [x[i] * (w**int(b[i])) for i in range(NUM_TRIALS)]
-    # calculate z based on the bit 
-    # send z to the server
-    client.sendall (str(z).encode ())
-
-    # get confirmation
-    confirmation = json.loads(client.recv (1024).decode ())
-    print (confirmation['message'])
-    if confirmation['success']:
-        login_success()
-    if not confirmation['success']:
-        print("Invalid Crentials")
-        invalid_login()
+    login_process(w,N)
 
 def registration():
     global register_screen
@@ -326,13 +322,14 @@ def register_user():
         N = p * q
 
         # pick a random w
-        w = random.randrange (N)
+        w = [get_coprime(N) for _ in range(NUM_KEYS)]
 
         # compute sqaure of w modulo n
-        v = modexp (w, 2, N)
+        v = [modexp (w[i], 2, N) for i in range(NUM_KEYS)]
 
         # submit this to the server
-        client.sendall (str(v).encode ())
+        str_v = json.dumps(v)
+        client.sendall (str_v.encode ())
         server_v = client.recv (2048).decode ()
 
         client.sendall (str(N).encode ())
@@ -340,7 +337,7 @@ def register_user():
 
         # make sure server has the same values
         try:
-            if int (server_v) == v and int (server_N) == N:
+            if json.loads(server_v) == v and int(server_N) == N:
                 client.sendall ("OK".encode ())
             else:
                 client.sendall ("ERR".encode ())
