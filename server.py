@@ -101,6 +101,7 @@ def create_credentials(connection, client_addr):
 def validate_credentials(connection, client_addr):
     # get user ID from the client
     uID = connection.recv (1024).decode ()
+    print(uID)
     
     # check if this user ID is actually registered
     flag = False
@@ -117,6 +118,7 @@ def validate_credentials(connection, client_addr):
     # if its a new username
     if not flag:
         error_msg = COLORS.red + "This username is not registered. Use python client.py -create to create new credentials." + COLORS.clear
+        print(len(error_msg))
         connection.send (error_msg.encode ())
         return
     
