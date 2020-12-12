@@ -225,6 +225,7 @@ def login_process(w,N):
     b = client.recv (1024).decode ()
     b = json.loads(b)
 
+    # calculate z based on the bit 
     bit_prod = []
     for i in range(NUM_TRIALS):
         bit_prod.append(1)
@@ -234,7 +235,7 @@ def login_process(w,N):
     z = [x[i] * bit_prod[i] for i in range(NUM_TRIALS)]
     str_z = json.dumps(z)
 
-    # calculate z based on the bit 
+    
     # send z to the server
     client.sendall (str_z.encode ())
 
