@@ -5,7 +5,7 @@
     Course Project
     @Authors: Akhil Kumar, Dhruv Khandelwal, Dhruva Panyam
 
-    For now this is a simple echo server 
+    ZKP Client built using TKinter
 '''
 import time
 import os
@@ -18,16 +18,10 @@ from tkinter import *
 from tkinter import filedialog
 import os
 
-PORT = server_addr[1]
-FORMAT = 'utf-8'
-SERVER = server_addr[0]
-ADDR = (SERVER, PORT)
-
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(ADDR)
+client.connect(server_addr)
 
 def browseFiles(): 
-    # print('browse')
     global namer
     browse_filename = filedialog.askopenfilename(initialdir = "/", 
                                           title = "Select a File", 
@@ -38,7 +32,6 @@ def browseFiles():
        
     
     # Change label contents 
-    # print(browse_filename)
     try:
         namer.delete(0,END)
         namer.insert(0,browse_filename)
@@ -54,6 +47,7 @@ def login_success():
     login1_scrn.geometry("200x200")
     Label(login1_scrn,text="Login Success!",fg="black").pack()
     Button(login1_scrn,text="ok",bg="black",fg="white",command=closebtn1).pack()
+
 def reg_succ():
     global register_scrn 
     register_scrn=Toplevel(register_screen)
