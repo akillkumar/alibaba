@@ -26,5 +26,6 @@ Note: In the original paper, only one random number r is used, which is multipli
 
 ## Security
 The security of the protocol follows from the zero-knowledge proof. Peggy never reveals her secret numbers, only the square of the numbers modulo N, and N. If an eavesdropper Eve were to be listening in, she would learn Victor's _v<sub>i</sub>_, but since she does not know Peggy's secret numbers, she would not be able to pose as Peggy. If she had to convice Victor that she was Peggy, she would have to correctly guess what Victors _b<sub>i</sub>_ will be, and calculate her _x_ accordingly and send it. <br>
+<br>
 The probability that Eve coorectly guesses this for _k_ secret numbers in _t_ trials is __2<sup>-kt</sup>__. Our implementation uses 5 secret numbers and runs 10 trials; the probability of successfullly posing as Peggy is thus, one in __2<sup>50</sup>__
 
