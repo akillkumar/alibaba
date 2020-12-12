@@ -16,16 +16,33 @@ Developed by Uriel Feige, Amos Fiat, and Adi Shamir in 1988, FFS is an example o
 6. Victor stores Peggy's record as __{N, [v<sub>1</sub>, ... , v<sub>k</sub>]}__ against Peggy's username <br>
 
 ##### Authentication
-1. Peggy chooses random integers x<sub>1</sub>, ... , x<sub>k</sub> coprime to N and computes _y ≡ x<sub>i</sub> w<sub>i</sub><sup>2</sup> (mod N)_. Peggy then sends _y_ to Victor <br>
+1. Peggy chooses random a integer x coprime to N and computes _y ≡ x w<sub>i</sub><sup>2</sup> (mod N)_. Peggy then sends _y_ to Victor <br>
 2. Victor creates a string of random bits b<sub>i</sub> of length k. Victor sends these numbers to Peggy.
 3. Peggy computes _z ≡ y*w<sub>i</sub><sup>b<sub>i</sub></sup> (mod N)_. Peggy then sends _z_ to Victor.<br>
-4. Victor verifies that _z<sup>2</sup> ≡ y * v<sup>b<sub>i</sub></sup> (mod N)_ <br>
-This procedure, called a trial is repeated as many times as required with different values of x and b<sub>i</sub> until Victor is satisfied that he is indeed talking to Peggy.
+4. Victor verifies that _z<sup>2</sup> ≡ y * v<sub>i</sub><sup>b<sub>i</sub></sup> (mod N)_ 
 <br>
-Note: In the original paper, only one random number r is used, which is multiplied with the every secret number. Our implementation uses k random numbers, each multiplied with their respective secret number.
+This procedure, called a trial is repeated as many times as required with different values of x and b<sub>i</sub> until Victor is satisfied that he is indeed talking to Peggy.
+
 
 ## Security
 The security of the protocol follows from the zero-knowledge proof. Peggy never reveals her secret numbers, only the square of the numbers modulo N, and N. If an eavesdropper Eve were to be listening in, she would learn Victor's _v<sub>i</sub>_, but since she does not know Peggy's secret numbers, she would not be able to pose as Peggy. If she had to convice Victor that she was Peggy, she would have to correctly guess what Victors _b<sub>i</sub>_ will be, and calculate her _x_ accordingly and send it. <br>
 <br>
 The probability that Eve coorectly guesses this for _k_ secret numbers in _t_ trials is __2<sup>-kt</sup>__. Our implementation uses 5 secret numbers and runs 10 trials; the probability of successfullly posing as Peggy is thus, one in __2<sup>50</sup>__
+
+## How to run
+First, clone the repository into your local machine 
+```sh
+$ git clone https://github.com/akillkumar/alibaba.git
+```
+
+Then, navigate into the directory, and run the server 
+```sh
+$ python server.py
+```
+
+
+Once the server is running and listening, launch the client 
+```sh
+$ python client.py
+```
 
