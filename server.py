@@ -5,7 +5,7 @@
     Course Project
     @Authors: Akhil Kumar, Dhruv Khandelwal, Dhruva Panyam
 
-    For now this is a simple echo server 
+    ZKP Authentication server
 '''
 
 import os
